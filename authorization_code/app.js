@@ -49,7 +49,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email user-modify-playback-state';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -192,6 +192,51 @@ app.post('/create_playlist', function(req, res)  {
   // .then((response) => response.json())
   // .then((data) => console.log(data));
 
+});
+
+app.post('/search_track', function(req, res) {
+
+  var trackName = req.body.trackName;
+
+  var authOptions = {
+    url: 'https://accounts.spotify.com/api/token',
+    headers: { 'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')) },
+    form: {
+      grant_type: 'refresh_token',
+      refresh_token: refresh_token
+    },
+    json: true
+  };
+
+  request.post(authOptions, function(error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var access_token = body.access_token;
+
+      var options = {
+        url: `https://api.spotify.com/v1/search?q=${trackName}&type=track`,
+        headers: { 'Authorization': 'Bearer ' + access_token },
+        json: true
+      };
+
+      request.get(options, function(error, response, body) {
+        var trackURI = body.tracks.items[0].uri;
+
+        var playOptions = {
+          url: `https://api.spotify.com/v1/me/player/play`,
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          body: {
+            uris: [trackURI]
+          },
+          json: true
+        };
+
+        request.put(playOptions, function(error, response, body) {
+          console.log(body);
+        });
+        console.log(body);
+      });
+    }
+  });
 });
 
 app.get('/refresh_token', function(req, res) {
