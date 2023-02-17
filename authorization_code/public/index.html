@@ -64,6 +64,53 @@
     <input type="text" id="playlist-name" name="playlist-name"><br><br>
     <button class="btn btn-default" id="create-playlist">create playlist</button>
 
+    <title>Spotify Web Playback SDK Quick Start</title>
+</head>
+<body>
+    <h1>Spotify Web Playback SDK Quick Start</h1>
+    <button id="togglePlay">Toggle Play</button>
+
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            const token = 'BQBXm_bLJl4JIcCaqsk4bwEVTucfUCivjJZTrNyYzg5HkUNWHndU2WRRfM8WuIhGAfGML8ncwJnyJPdZQNNfNfMtV56KEOST_QOVheYOQBqS1syp2VzxP5B1JDxY_dzxPcv1Gao9ZwRxNCiLhyRNSYH6SrTP-smFINwR1eOg2Ek9LnPfeGNnTJm_uVFu5VxlLv6NKUqZCNCTbPD5LGsR3gxz';
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => { cb(token); },
+                volume: 0.5
+            });
+
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+            });
+
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
+
+            player.addListener('initialization_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('authentication_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('account_error', ({ message }) => {
+                console.error(message);
+            });
+
+            document.getElementById('togglePlay').onclick = function() {
+              player.togglePlay();
+            };
+
+            player.connect();
+        }
+    </script>
+</body>
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script>
@@ -142,8 +189,33 @@
         }
       })();
     </script>
-    <script>
 
+      <label for="track-name">Search track:</label>
+      <input type="text" id="track-name" name="track-name"><br><br>
+      <button class="btn btn-default" id="search-button">search</button>
+
+    <script>
+          //searching for a track
+          document.getElementById('search-button').addEventListener('click', function() {
+
+            var trackName = document.getElementById('track-name').value;
+
+            var data = {trackName: trackName};
+
+            fetch('search_track', {
+                  method: 'POST',
+                  headers: {
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/json'
+                  },
+                  body: JSON.stringify(data)
+
+            })
+            .then((response) => response.json())
+            .then((data) => console.log(data));
+          }, false);
+
+          //creating a playlist
           document.getElementById('create-playlist').addEventListener('click', function() {
 
             var playlistName = document.getElementById('playlist-name').value;
