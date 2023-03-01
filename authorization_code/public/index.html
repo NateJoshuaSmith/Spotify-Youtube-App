@@ -218,6 +218,8 @@
           //creating a playlist
           document.getElementById('create-playlist').addEventListener('click', function() {
 
+            fetch('/test_youtube');
+
             var playlistName = document.getElementById('playlist-name').value;
 
             var data = {playlistName: playlistName};
@@ -235,6 +237,10 @@
             .then((data) => console.log(data));
           }, false);
     </script>
+
+      <label for="video-name">Search Youtube:</label>
+      <input type="text" id="video-name" name="video-name"><br><br>
+      <button class="btn btn-default" id="youtube-search-button">search</button>
 
       <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
       <div id="player"></div>
@@ -267,7 +273,7 @@
   
         // 4. The API will call this function when the video player is ready.
         function onPlayerReady(event) {
-          player.loadVideoById('OAr1w8ZnROk', 0);
+          console.log('onPlayerReady');
         }
   
         // 5. The API calls this function when the player's state changes.
@@ -276,14 +282,34 @@
         var done = false;
         function onPlayerStateChange(event) {
           if (event.data == YT.PlayerState.PLAYING && !done) {
-            setTimeout(stopVideo, 6000);
+            setTimeout(stopVideo, 600000);
             done = true;
           }
         }
         function stopVideo() {
           player.stopVideo();
         }
+
+        //Youtube search and play
+        document.getElementById('youtube-search-button').addEventListener('click', async function() {
+
+          var videoName = document.getElementById('video-name').value;
+
+          var data = {videoName: videoName};
+
+          await fetch('search_youtube', {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+
+          })
+          .then((response) => response.json())
+          .then((data) => player.loadVideoById(data.videoId, 0));            
+        }, false);
       </script>
+
   </body>
 </html>
-

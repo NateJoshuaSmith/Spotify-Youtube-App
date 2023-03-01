@@ -180,31 +180,38 @@ app.post("/create_playlist", function (req, res) {
       });
     }
   });
+});
 
-  //want to know why this isnt working.
+app.post("/search_youtube", function (req, res) {
+  var videoName = req.body.videoName;
 
-  // fetch('http://localhost:5500/refresh_token?' + new URLSearchParams({
-  //   token: refresh_token
-  // }), {
-  //   method: 'GET',
-  //   headers: {
-  //               'Content-Type': 'application/json',
-  //               'Accept': 'application/json'
-  //       },
-  // })
-  // .then((response) => response.json());
+  var options = {
+    url: `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${videoName}&key=AIzaSyDd_ohKvPmwIndJAuEKvhuShK3IKWQVl5E`,
+    json: true,
+  };
 
-  // fetch('/refresh_token' + new URLSearchParams({
-  //   foo: 'value',
-  //   bar: 2,)}, {
-  //   method: 'GET',
-  //   headers: {
-  //           'Content-Type': 'application/json',
-  //           'Accept': 'application/json'
-  //   },
-  // })
+  request.get(options, function (error, response, body) {
+    var videoId = body.items[0].id.videoId;
+    if (!error && response.statusCode === 200) {
+      res.send({
+        videoId: videoId,
+      });
+    }
+  });
+
+  //why doesnt this code display the data and response when in the debugger? Works with request but not fetch
+  // await fetch(
+  //   "https://www.googleapis.com/youtube/v3/search?=spiderman&key=AIzaSyDd_ohKvPmwIndJAuEKvhuShK3IKWQVl5E",
+  //   {
+  //     method: "GET",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Accept: "application/json",
+  //     },
+  //   }
+  // )
   // .then((response) => response.json())
-  // .then((data) => console.log(data));
+  // .then((data) => console.log(data.items[0].id));
 });
 
 app.post("/search_track", function (req, res) {
