@@ -242,6 +242,17 @@
       <input type="text" id="video-name" name="video-name"><br><br>
       <button class="btn btn-default" id="youtube-search-button">search</button>
 
+      <label for="video-name">Search Youtube and add first track to combined playlist:</label>
+      <input type="text" id="youtube-video-name" name="youtube-video-name"><br><br>
+      <button class="btn btn-default" id="youtube-search-button-combination">search</button>
+
+      <label for="video-name">Search Spotify and add first track to combined playlist:</label>
+      <input type="text" id="spotify-song-name" name="spotify-song-name"><br><br>
+      <button class="btn btn-default" id="spotify-search-button-combination">search</button>
+
+      <button class="btn btn-default" id="test">TEST</button>
+
+
       <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
       <div id="player"></div>
   
@@ -292,7 +303,6 @@
 
         //Youtube search and play
         document.getElementById('youtube-search-button').addEventListener('click', async function() {
-
           var videoName = document.getElementById('video-name').value;
 
           var data = {videoName: videoName};
@@ -308,6 +318,57 @@
           })
           .then((response) => response.json())
           .then((data) => player.loadVideoById(data.videoId, 0));            
+        }, false);
+
+        var combinedPlaylists = [];
+
+        //Youtube search and combine into playlist
+        document.getElementById('youtube-search-button-combination').addEventListener('click', async function() {
+          var videoName = document.getElementById('youtube-video-name').value;
+
+          var data = {videoName: videoName};
+
+          await fetch('search_youtube', {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+
+          })
+          .then((response) => response.json())
+          .then((data) => combinedPlaylists.push(data));    
+
+        }, false);
+
+        //Spotify search and combine into playlist
+        document.getElementById('spotify-search-button-combination').addEventListener('click', async function() {
+          var trackName = document.getElementById('spotify-song-name').value;
+
+          var data = {trackName: trackName};
+
+          await fetch('search_spotify_track', {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+
+          })
+          .then((response) => response.json())
+          .then((data) => combinedPlaylists.push(data));     
+        }, false);
+
+        //Test to demonstrate the two playlist items are in the same object. With these we can call each respective API to play the songs
+        document.getElementById('test').addEventListener('click', async function() {
+
+          console.log(combinedPlaylists[0].id);
+          console.log(combinedPlaylists[0].application);
+
+          console.log(combinedPlaylists[1].id);
+          console.log(combinedPlaylists[1].application);
         }, false);
       </script>
 

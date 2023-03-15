@@ -107,10 +107,10 @@ app.get("/callback", function (req, res) {
           json: true,
         };
 
-        // use the access token to access the Spotify Web API
-        // request.get(options, function(error, response, body) {
-        //   console.log(body);
-        // });
+        //use the access token to access the Spotify Web API
+        request.get(options, function (error, response, body) {
+          console.log(body);
+        });
 
         // we can also pass the token to the browser to make requests from there
         res.redirect(
@@ -182,6 +182,7 @@ app.post("/create_playlist", function (req, res) {
   });
 });
 
+//searches for the requested youtube video and returns its corresponding id
 app.post("/search_youtube", function (req, res) {
   var videoName = req.body.videoName;
 
@@ -194,26 +195,56 @@ app.post("/search_youtube", function (req, res) {
     var videoId = body.items[0].id.videoId;
     if (!error && response.statusCode === 200) {
       res.send({
-        videoId: videoId,
+        id: videoId,
+        application: "youtube",
       });
     }
   });
-
-  //why doesnt this code display the data and response when in the debugger? Works with request but not fetch
-  // await fetch(
-  //   "https://www.googleapis.com/youtube/v3/search?=spiderman&key=AIzaSyDd_ohKvPmwIndJAuEKvhuShK3IKWQVl5E",
-  //   {
-  //     method: "GET",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Accept: "application/json",
-  //     },
-  //   }
-  // )
-  // .then((response) => response.json())
-  // .then((data) => console.log(data.items[0].id));
 });
 
+//searches for the requested track name and returns the spotify URI it corresponds to
+app.post("/search_spotify_track", function (req, res) {
+  var trackName = req.body.trackName;
+
+  var authOptions = {
+    url: "https://accounts.spotify.com/api/token",
+    headers: {
+      Authorization:
+        "Basic " +
+        new Buffer(client_id + ":" + client_secret).toString("base64"),
+    },
+    form: {
+      grant_type: "refresh_token",
+      refresh_token: refresh_token,
+    },
+    json: true,
+  };
+
+  request.post(authOptions, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var access_token = body.access_token;
+
+      var options = {
+        url: `https://api.spotify.com/v1/search?q=${trackName}&type=track`,
+        headers: { Authorization: "Bearer " + access_token },
+        json: true,
+      };
+
+      request.get(options, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          var trackURI = body.tracks.items[0].uri;
+
+          res.send({
+            id: trackURI,
+            application: "spotify",
+          });
+        }
+      });
+    }
+  });
+});
+
+//searches for requested track name and plays the track
 app.post("/search_track", function (req, res) {
   var trackName = req.body.trackName;
 
@@ -262,6 +293,7 @@ app.post("/search_track", function (req, res) {
   });
 });
 
+//gets the refresh token
 app.get("/refresh_token", function (req, res) {
   // requesting access token from refresh token
   var refresh_token = req.query.refresh_token;
