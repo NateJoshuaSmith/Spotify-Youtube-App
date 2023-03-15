@@ -244,6 +244,45 @@ app.post("/search_spotify_track", function (req, res) {
   });
 });
 
+//plays a spotify track
+app.post("/play_spotify_track", function (req, res) {
+  var trackURI = req.body.trackUri;
+
+  var authOptions = {
+    url: "https://accounts.spotify.com/api/token",
+    headers: {
+      Authorization:
+        "Basic " +
+        new Buffer(client_id + ":" + client_secret).toString("base64"),
+    },
+    form: {
+      grant_type: "refresh_token",
+      refresh_token: refresh_token,
+    },
+    json: true,
+  };
+
+  request.post(authOptions, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var access_token = body.access_token;
+
+      var playOptions = {
+        url: `https://api.spotify.com/v1/me/player/play`,
+        headers: { Authorization: "Bearer " + access_token },
+        body: {
+          uris: [trackURI],
+        },
+        json: true,
+      };
+
+      request.put(playOptions, function (error, response, body) {
+        console.log(body);
+      });
+      console.log(body);
+    }
+  });
+});
+
 //searches for requested track name and plays the track
 app.post("/search_track", function (req, res) {
   var trackName = req.body.trackName;

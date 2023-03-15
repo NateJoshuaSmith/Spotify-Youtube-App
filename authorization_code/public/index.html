@@ -250,6 +250,15 @@
       <input type="text" id="spotify-song-name" name="spotify-song-name"><br><br>
       <button class="btn btn-default" id="spotify-search-button-combination">search</button>
 
+      <label for="video-name">Start playing the songs in the combined playlist:</label>
+      <button class="btn btn-default" id="play-combined-playlist">play combined playlist</button>
+
+      <input type="text" id="next-name" name="next-name"><br><br>
+      <button class="btn btn-default" id="next-button">next</button>
+
+      <input type="text" id="previous-name" name="previous-name"><br><br>
+      <button class="btn btn-default" id="previous-button">prev</button>
+
       <button class="btn btn-default" id="test">TEST</button>
 
 
@@ -320,7 +329,9 @@
           .then((data) => player.loadVideoById(data.videoId, 0));            
         }, false);
 
+        //not entirely sure where I should put these variables. There kinda acting like global variables in my head.
         var combinedPlaylists = [];
+        var index = 0;
 
         //Youtube search and combine into playlist
         document.getElementById('youtube-search-button-combination').addEventListener('click', async function() {
@@ -361,16 +372,58 @@
           .then((data) => combinedPlaylists.push(data));     
         }, false);
 
-        //Test to demonstrate the two playlist items are in the same object. With these we can call each respective API to play the songs
-        document.getElementById('test').addEventListener('click', async function() {
-
-          console.log(combinedPlaylists[0].id);
-          console.log(combinedPlaylists[0].application);
-
-          console.log(combinedPlaylists[1].id);
-          console.log(combinedPlaylists[1].application);
+        //next button
+        document.getElementById('next-button').addEventListener('click', async function() {
+          if((index + 1) % combinedPlaylists.length == 0) {
+            index = 0;
+          }
+          else {
+            index++;
+          }
+          
+          play(index);
         }, false);
-      </script>
 
+        //previous button
+        document.getElementById('previous-button').addEventListener('click', async function() {
+          if(index == 0) {
+            index = combinedPlaylists.length - 1;
+          }
+          else {
+            index--;
+          }
+          
+          play(index);
+        }, false);
+
+        //play the combined playlist
+        document.getElementById('play-combined-playlist').addEventListener('click', async function() {
+          play(index);
+        }, false);
+
+        //plays spotify or youtube track. Used for the next and previous buttons
+        async function play(index) {
+          console.log(index);
+          if(combinedPlaylists[index].application == 'youtube') {
+            player.loadVideoById(combinedPlaylists[index].id, 0)
+          }
+
+          if(combinedPlaylists[index].application == 'spotify') {
+            var data = {trackUri: combinedPlaylists[index].id};
+
+            await fetch('play_spotify_track', {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                },
+                body: JSON.stringify(data)
+
+            })
+            .then((response) => response.json())
+            .then((data) => console.log('success')); 
+          }
+        }
+      </script>
   </body>
 </html>
