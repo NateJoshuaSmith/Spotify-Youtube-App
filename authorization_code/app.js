@@ -192,6 +192,7 @@ app.post("/search_youtube", function (req, res) {
   };
 
   request.get(options, function (error, response, body) {
+    console.log(body);
     var videoId = body.items[0].id.videoId;
     if (!error && response.statusCode === 200) {
       res.send({
@@ -328,6 +329,60 @@ app.post("/search_track", function (req, res) {
         });
         console.log(body);
       });
+    }
+  });
+});
+
+app.get("/pause_spotify", function (req, res) {
+  var authOptions = {
+    url: "https://accounts.spotify.com/api/token",
+    headers: {
+      Authorization:
+        "Basic " +
+        new Buffer(client_id + ":" + client_secret).toString("base64"),
+    },
+    form: {
+      grant_type: "refresh_token",
+      refresh_token: refresh_token,
+    },
+    json: true,
+  };
+
+  request.post(authOptions, async function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var access_token = body.access_token;
+
+      await fetch("https://api.spotify.com/v1/me/player/pause", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: "Bearer " + access_token,
+        },
+        // body: JSON.stringify({
+        //   device_id: "68a644bc0a788b0c1e9c9e43cfdaf593449959df",
+        // }),
+      }).then(function (x) {
+        return x;
+      });
+      // .then(function (response) {
+      //   var x = response.json();
+      //   return x;
+      // })
+      // .then(function (data) {
+      //   console.log(data);
+      //   return data;
+      // });
+
+      // var options = {
+      //   url: `https://api.spotify.com/v1/me/player/pause?device_id=68a644bc0a788b0c1e9c9e43cfdaf593449959df`,
+      //   headers: { Authorization: "Bearer " + access_token },
+      //   json: true,
+      // };
+
+      // request.put(authOptions, function (error, response, body) {
+      //   console.log("track paused");
+      // });
     }
   });
 });

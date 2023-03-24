@@ -405,10 +405,19 @@
         async function play(index) {
           console.log(index);
           if(combinedPlaylists[index].application == 'youtube') {
+
+            if(player.getPlayerState() == YT.PlayerState.PAUSED || player.getPlayerState() == -1 ) {
+              await fetch('pause_spotify');
+            }
             player.loadVideoById(combinedPlaylists[index].id, 0)
           }
 
           if(combinedPlaylists[index].application == 'spotify') {
+
+            if(player.getPlayerState() == YT.PlayerState.PLAYING) {
+              player.pauseVideo();
+            }
+
             var data = {trackUri: combinedPlaylists[index].id};
 
             await fetch('play_spotify_track', {
