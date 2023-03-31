@@ -383,6 +383,9 @@ app.get("/pause_spotify", function (req, res) {
       // request.put(authOptions, function (error, response, body) {
       //   console.log("track paused");
       // });
+      res.send({
+        access_token: "test",
+      });
     }
   });
 });
